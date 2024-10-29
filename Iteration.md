@@ -37,65 +37,52 @@ library(rvest)
     ## 
     ##     guess_encoding
 
-## writing my first function!!
-
-as an example, here’s a z-score computation
-
 ``` r
-x_vec = rnorm(n = 25, mean = 10, sd = 3.5)
-
-(x_vec - mean(x_vec)) / sd(x_vec)
+library(dplyr)
 ```
 
-    ##  [1]  0.33962064  0.44854243 -0.38560364 -0.18332719  1.16713775 -0.12435916
-    ##  [7] -0.09912559  2.13402346 -1.12649558  0.80864330  0.21412365 -0.76899131
-    ## [13]  0.53942462 -0.22825111 -1.84541663 -0.56129571 -1.61811630 -0.02928343
-    ## [19] -1.98723086  0.05559622  0.65926621  0.89022488  0.70156241 -0.53615218
-    ## [25]  1.53548314
-
-Now i’ll write a function to do this.
+## 
 
 ``` r
-z_scores = function(x) {
-  
-  if (!is.numeric(x)) {
-    stop("x needs to be numeric")
-  }
-  
-  if (length(x) < 5) {
-    stop("you need at least five numbers to compute the z score")
-  }
-  
-  z = (x - mean(x)) / sd(x)
-  
-  return(z)
-  
-}
+l = list(
+  vec_numeric = 5:8,
+  mat         = matrix(1:8, 2, 4),
+  vec_logical = c(TRUE, FALSE),
+  summary     = summary(rnorm(1000)))
 
-z_scores(x = x_vec)
+l
 ```
 
-    ##  [1]  0.33962064  0.44854243 -0.38560364 -0.18332719  1.16713775 -0.12435916
-    ##  [7] -0.09912559  2.13402346 -1.12649558  0.80864330  0.21412365 -0.76899131
-    ## [13]  0.53942462 -0.22825111 -1.84541663 -0.56129571 -1.61811630 -0.02928343
-    ## [19] -1.98723086  0.05559622  0.65926621  0.89022488  0.70156241 -0.53615218
-    ## [25]  1.53548314
-
-does this always work?
+    ## $vec_numeric
+    ## [1] 5 6 7 8
+    ## 
+    ## $mat
+    ##      [,1] [,2] [,3] [,4]
+    ## [1,]    1    3    5    7
+    ## [2,]    2    4    6    8
+    ## 
+    ## $vec_logical
+    ## [1]  TRUE FALSE
+    ## 
+    ## $summary
+    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    ## -3.57510 -0.65399  0.02039 -0.01490  0.70575  2.66921
 
 ``` r
-z_scores(x = 3)
+l[[1]]
 ```
 
-    ## Error in z_scores(x = 3): you need at least five numbers to compute the z score
+    ## [1] 5 6 7 8
 
 ``` r
-z_scores(x = c("my", "name", "is", "jeff"))
+list_norm = 
+  list(
+    a = rnorm(20, 0, 5),
+    b = rnorm(20, 4, 5),
+    c = rnorm(20, 0, 10),
+    d = rnorm(20, 4, 10)
+  )
 ```
-
-    ## Error in z_scores(x = c("my", "name", "is", "jeff")): x needs to be numeric
-
-## A new function!!!
 
 ``` r
 mean_and_sd = function(x) {
@@ -113,69 +100,54 @@ mean_and_sd = function(x) {
 }
 ```
 
+Use functions to take mean and sd of all samples.
+
 ``` r
-mean_and_sd(x_vec)
+mean_and_sd(list_norm[["a"]])
+```
+
+    ## # A tibble: 1 × 2
+    ##     mean    sd
+    ##    <dbl> <dbl>
+    ## 1 -0.357  5.09
+
+``` r
+mean_and_sd(list_norm[["b"]])
 ```
 
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  9.67  3.31
-
-## Check stuff using a simulation
+    ## 1  4.38  3.54
 
 ``` r
-sim_df = 
-  tibble(
-    x = rnorm(30, 10, 5)
-  )
-
-sim_df |> 
-  summarize(
-    mean = mean(x),
-    sd = sd(x)
-  )
+mean_and_sd(list_norm[["c"]])
 ```
 
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  10.4  4.12
-
-Simulation function to check sample mean and sd.
+    ## 1 -2.51  11.0
 
 ``` r
-sim_mean_sd = function(sample_size, true_mean, true_sd) {
+mean_and_sd(list_norm[["d"]])
+```
+
+    ## # A tibble: 1 × 2
+    ##    mean    sd
+    ##   <dbl> <dbl>
+    ## 1  6.89  11.7
+
+## Use a for loop
+
+create output list, and run a for loop
+
+``` r
+output = vector("list", length = 4)
+
+for (i in 1:4) {
   
-  sim_df = 
-  tibble(
-    x = rnorm(sample_size, true_mean, true_sd)
-  )
-
-out_df = 
-  sim_df |> 
-  summarize(
-    mean = mean(x),
-    sd = sd(x)
-  )
-
-return(out_df)
+  output[[i]] = mean_and_sd(list_norm[[i]])
   
 }
-
-sim_mean_sd(sample_size = 30, true_mean = 4, true_sd = 12)
 ```
-
-    ## # A tibble: 1 × 2
-    ##    mean    sd
-    ##   <dbl> <dbl>
-    ## 1  5.34  12.1
-
-``` r
-sim_mean_sd(true_sd = 12, sample_size = 30, true_mean = 4)
-```
-
-    ## # A tibble: 1 × 2
-    ##    mean    sd
-    ##   <dbl> <dbl>
-    ## 1  2.68  14.8
